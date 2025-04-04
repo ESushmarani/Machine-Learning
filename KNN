@@ -1,0 +1,33 @@
+import numpy as np
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+iris = datasets.load_iris()
+X = iris.data 
+y = iris.target
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+np.random.seed(42)
+num_noisy_labels = int(0.1 * len(y_train))
+random_indices = np.random.choice(len(y_train), num_noisy_labels, replace=False)
+for i in random_indices:
+    original_label = y_train[i]
+    possible_labels = [label for label in [0, 1, 2] if label != original_label]
+    y_train[i] = np.random.choice(possible_labels) 
+print(f"\nIntroduced noise: Modified {num_noisy_labels} labels in training data.")
+k = 5 
+knn = KNeighborsClassifier(n_neighbors=k)  
+knn.fit(X_train, y_train)
+y_pred = knn.predict(X_test)
+correct = 0
+wrong = 0
+print("\n=== Prediction Results ===")
+for i in range(len(y_test)):
+    if y_test[i] == y_pred[i]:
+        correct += 1
+        print(f"Correct: Predicted={iris.target_names[y_pred[i]]}, Actual={iris.target_names[y_test[i]]}")
+    else:
+        wrong += 1
+        print(f"Wrong: Predicted={iris.target_names[y_pred[i]]}, Actual={iris.target_names[y_test[i]]}")
+accuracy = (correct / len(y_test)) * 100
+print(f"\nTotal Correct: {correct}, Total Wrong: {wrong}")
+print(f"Accuracy: {accuracy:.2f}%")
